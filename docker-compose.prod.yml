@@ -4,3 +4,6 @@ services:
       - POSTGRES_DB=$POSTGRES_DB
       - POSTGRES_USER=$POSTGRES_USER
       - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+  bot:
+    environment:
+      - TOKEN=$TOKEN

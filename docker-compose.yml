@@ -3,6 +3,10 @@ services:
     image: postgres
     volumes:
       - postgresql:/var/lib/postgresql/data
+  bot:
+    build: .
+    volumes:
+      - .:/app
 
 volumes:
   postgresql:

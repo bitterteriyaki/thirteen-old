@@ -2,3 +2,6 @@ services:
   database:
     env_file:
       - .env
+  bot:
+    env_file:
+      - .env
