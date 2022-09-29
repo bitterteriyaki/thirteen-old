@@ -5,8 +5,10 @@ services:
       - postgresql:/var/lib/postgresql/data
   bot:
     build: .
+    tty: true
+    command: python launcher.py
     volumes:
-      - .:/app
+      - .:/bot
 
 volumes:
   postgresql:
