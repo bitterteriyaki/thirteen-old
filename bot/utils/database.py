@@ -15,31 +15,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from discord.ext import commands
+from gino import Gino
 
 
-class Owner(commands.Cog):
-    """Owner-only related commands. These commands are only available to
-    the bot owner.
+db = Gino()
+
+
+class CurrencyUser(db.Model):
+    """A model representing a user in the currency system.
 
     Attributes
     ----------
-    bot: :class:`bot.core.Thirteen`
-        The bot instance.
+    id: :class:`int`
+        The user's ID.
+    balance: :class:`int`
+        The user's balance.
     """
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    async def cog_check(self, ctx):
-        return await self.bot.is_owner(ctx.author)
-
-    @commands.command()
-    async def sync(self, ctx):
-        """Syncs the bot's slash commands with Discord."""
-        synced = await ctx.bot.tree.sync(guild=ctx.guild)
-        await ctx.send(f"Synced {len(synced)} commands.")
-
-
-async def setup(bot):
-    await bot.add_cog(Owner(bot))
+    id = db.Column(db.BigInteger(), primary_key=True)
+    balance = db.Column(db.BigInteger(), default=0, nullable=False)
