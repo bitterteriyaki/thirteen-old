@@ -15,9 +15,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import traceback
 import discord
 from discord.ext import commands
 from rich import print
+
+from bot.utils.extensions import get_extensions
 
 
 INTENTS = discord.Intents.all()
@@ -44,6 +47,19 @@ class Thirteen(commands.Bot):
             print(f"[yellow]✦ Running with {len(self.users)} users.[/]")
 
             self.is_first_run = False
+
+    async def setup_hook(self):
+        for extension in get_extensions():
+            try:
+                await self.load_extension(extension)
+            except Exception as e:
+                exc = traceback.format_exception(type(e), e, e.__traceback__)
+                formatted_exc = "".join(exc)
+
+                print(f"[red]✦ Failed to load extension [u]{extension}[/]:[/]")
+                print(f"[dim]{formatted_exc}[/]", end="")
+            else:
+                print(f"[green]✦ Loaded extension [u]{extension}[/].")
 
 
 async def get_prefix(bot, message):
