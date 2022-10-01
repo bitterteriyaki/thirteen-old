@@ -16,11 +16,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import traceback
+
 import discord
 from discord.ext import commands
 from rich import print
 
 from bot.utils.extensions import get_extensions
+from bot.utils.context import ThirteenContext
 
 
 INTENTS = discord.Intents.all()
@@ -47,6 +49,9 @@ class Thirteen(commands.Bot):
             print(f"[yellow]✦ Running with {len(self.users)} users.[/]")
 
             self.is_first_run = False
+
+    async def get_context(self, message):
+        return await super().get_context(message, cls=ThirteenContext)
 
     async def setup_hook(self):
         for extension in get_extensions():
