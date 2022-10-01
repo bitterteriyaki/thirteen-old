@@ -15,13 +15,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from gino import Gino
+import os
+
+from sqlalchemy import Column, BigInteger
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine
 
 
-db = Gino()
+db = create_async_engine(os.environ["DATABASE_URL"])
+Base = declarative_base()
 
 
-class CurrencyUser(db.Model):
+class CurrencyUser(Base):
     """A model representing a user in the currency system.
 
     Attributes
@@ -31,5 +36,7 @@ class CurrencyUser(db.Model):
     balance: :class:`int`
         The user's balance.
     """
-    id = db.Column(db.BigInteger(), primary_key=True)
-    balance = db.Column(db.BigInteger(), default=0, nullable=False)
+    __tablename__ = "currency"
+
+    id = Column(BigInteger, primary_key=True)
+    balance = Column(BigInteger, default=0, nullable=False)
