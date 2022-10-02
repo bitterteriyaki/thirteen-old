@@ -30,6 +30,17 @@ class ThirteenContext(Context):
     are used throughout the bot.
     """
 
+    @property
+    def db(self):
+        """Returns the current database connection engine.
+
+        Returns
+        -------
+        :class:`sqlalchemy.ext.asyncio.AsyncEngine`
+            The current database connection engine.
+        """
+        return self.bot.db
+
     def create_embed(self, content):
         """This method is a factory method that creates an embed with
         the given content. The embed is created with the default color

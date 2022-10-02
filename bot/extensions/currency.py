@@ -15,7 +15,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import discord
+from discord import app_commands
 from discord.ext import commands
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
+
+from bot.utils.constants import GUILD_ID
+from bot.utils.database import CurrencyUser
+
+
+COIN_EMOJI = "\U0001fa99"
 
 
 class Currency(commands.Cog):
@@ -30,6 +40,40 @@ class Currency(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    async def insert_user(self, ctx):
+        """Inserts a user into the database if they don't exist.
+        
+        Parameters
+        ----------
+        ctx: :class:`bot.utils.context.ThirteenContext`
+            The context of the command.
+        """
+        member = ctx.kwargs.get("member") or ctx.author
+
+        async with ctx.db.connect() as conn:
+            insert_stmt = insert(CurrencyUser).values(id=member.id)
+            stmt = insert_stmt.on_conflict_do_nothing()
+
+            await conn.execute(stmt)
+            await conn.commit()
+
+    @commands.hybrid_command()
+    @commands.before_invoke(insert_user)
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.describe(member="The member to check the balance of.")
+    async def balance(self, ctx, member: discord.Member = None):
+        """Check your or another user's balance."""
+        member = member or ctx.author
+
+        async with ctx.db.connect() as conn:
+            stmt = select(CurrencyUser).where(CurrencyUser.id == member.id)
+            result = await conn.execute(stmt)
+
+        user = result.first()
+
+        message = f"{member.mention} has {user.balance} {COIN_EMOJI}."
+        await ctx.reply(message)
 
 
 async def setup(bot):

@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         "currency",
-        Column("user_id", BigInteger(), primary_key=True),
+        Column("id", BigInteger(), primary_key=True),
         Column("balance", BigInteger(), default=0, nullable=False),
     )
 
