@@ -22,8 +22,19 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.ext.asyncio import create_async_engine
 
 
-db = create_async_engine(os.environ["DATABASE_URL"])
 Base = declarative_base()
+
+
+def create_engine():
+    """Creates the database engine. This function is called in the
+    :class:`bot.core.Thirteen` class.
+
+    Returns
+    -------
+    :class:`sqlalchemy.ext.asyncio.AsyncEngine`
+        The database connection engine.
+    """
+    return create_async_engine(os.environ["DATABASE_URL"])
 
 
 class CurrencyUser(Base):

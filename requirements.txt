@@ -4,3 +4,4 @@ rich==12.5.1
 discord.py==2.0.1
 asyncpg==0.26.0
 sqlalchemy[asyncio]==1.4.41
+redis==4.3.4

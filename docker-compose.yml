@@ -3,12 +3,18 @@ services:
     image: postgres
     volumes:
       - postgresql:/var/lib/postgresql/data
+  cache:
+    image: redis
+    command: redis-server
   bot:
     build: .
     tty: true
     command: python launcher.py
     volumes:
       - .:/bot
+    depends_on:
+      - database
+      - cache
 
 volumes:
   postgresql:

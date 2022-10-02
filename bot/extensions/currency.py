@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import discord
 from discord import app_commands
 from discord.ext import commands
-from sqlalchemy import select
+from discord.ext.commands import Author
 from sqlalchemy.dialects.postgresql import insert
 
 from bot.utils.constants import GUILD_ID
@@ -42,7 +42,9 @@ class Currency(commands.Cog):
         self.bot = bot
 
     async def insert_user(self, ctx):
-        """Inserts a user into the database if they don't exist.
+        """Inserts a user into the database and cache if they don't
+        exist. This is called when a user tries to use a command that
+        requires them to be in the database.
         
         Parameters
         ----------
@@ -58,22 +60,16 @@ class Currency(commands.Cog):
             await conn.execute(stmt)
             await conn.commit()
 
+        await ctx.cache.setnx(f"currency:{member.id}:balance", 0)
+
     @commands.hybrid_command()
-    @commands.before_invoke(insert_user)
     @app_commands.guilds(GUILD_ID)
     @app_commands.describe(member="The member to check the balance of.")
-    async def balance(self, ctx, member: discord.Member = None):
+    async def balance(self, ctx, member: discord.Member = Author):
         """Check your or another user's balance."""
-        member = member or ctx.author
-
-        async with ctx.db.connect() as conn:
-            stmt = select(CurrencyUser).where(CurrencyUser.id == member.id)
-            result = await conn.execute(stmt)
-
-        user = result.first()
-
-        message = f"{member.mention} has {user.balance} {COIN_EMOJI}."
-        await ctx.reply(message)
+        balance = await ctx.cache.get(f"currency:{member.id}:balance") or 0
+        content = f"{member.mention} has **{balance} {COIN_EMOJI}**."
+        await ctx.reply(content)
 
 
 async def setup(bot):

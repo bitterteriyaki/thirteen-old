@@ -23,7 +23,8 @@ from rich import print
 
 from bot.utils.extensions import get_extensions
 from bot.utils.context import ThirteenContext
-from bot.utils.database import db
+from bot.utils.database import create_engine
+from bot.utils.cache import create_cache
 
 
 INTENTS = discord.Intents.all()
@@ -37,6 +38,8 @@ class Thirteen(commands.Bot):
     ----------
     db: :class:`sqlalchemy.ext.asyncio.AsyncEngine`
         The database connection engine.
+    cache: :class:`redis.Redis`
+        The Redis cache connection.
     is_first_run: :class:`bool`
         Whether or not the bot is running for the first time.
     """
@@ -44,7 +47,8 @@ class Thirteen(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=get_prefix, intents=INTENTS)
 
-        self.db = db
+        self.db = create_engine()
+        self.cache = create_cache()
         self.is_first_run = True
 
     async def on_ready(self):
