@@ -19,6 +19,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Author
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
 from bot.utils.constants import GUILD_ID
@@ -40,6 +41,13 @@ class Currency(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    async def cog_load(self):
+        async with self.bot.db.connect() as conn:
+            users = await conn.execute(select(CurrencyUser))
+
+        for id, balance in users.all():
+            await self.bot.cache.setnx(f"currency:{id}:balance", balance)
 
     async def insert_user(self, ctx):
         """Inserts a user into the database and cache if they don't
