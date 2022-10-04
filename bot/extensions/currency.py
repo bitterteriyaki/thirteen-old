@@ -93,24 +93,24 @@ class Currency(commands.Cog):
 
     @commands.hybrid_command()
     @app_commands.guilds(GUILD_ID)
-    @app_commands.describe(member="The member to check the balance of.")
+    @app_commands.describe(member="O membro para verificar o saldo.")
     async def balance(self, ctx, member: discord.Member = Author):
-        """Check your or another user's balance."""
+        """Verifique o seu saldo ou o de outro usuário."""
         balance = await ctx.cache.get(f"currency:{member.id}:balance") or 0
-        content = f"{member.mention} has **{balance} {COIN_EMOJI}**."
+        content = f"{member.mention} possui **{balance} {COIN_EMOJI}**."
         await ctx.reply(content)
 
     @commands.hybrid_command()
     @commands.before_invoke(insert_user)
     @commands.cooldown(1, 86400, commands.BucketType.user)
     @app_commands.guilds(GUILD_ID)
-    @app_commands.describe(member="The member to give money to.")
+    @app_commands.describe(member="O membro a quem dar os créditos.")
     async def daily(self, ctx, member: discord.Member = Author):
-        """Collect your daily reward or give it to another user."""
+        """Colete seus créditos diários ou dê a outro usuário."""
         amount = random.randint(25, 50)
         await self.add_coins(member, amount)
 
-        content = f"{member.mention} collected **{amount} {COIN_EMOJI}**."
+        content = f"{member.mention} coletou **{amount} {COIN_EMOJI}**."
         await ctx.reply(content)
 
 
