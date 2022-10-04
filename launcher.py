@@ -18,12 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 
 import click
-import alembic
+import humanize
 
 from bot.core import Thirteen
 
 
 def run_bot():
+    humanize.i18n.activate("pt_BR")
+
     bot = Thirteen()
     token = os.environ["TOKEN"]
 
