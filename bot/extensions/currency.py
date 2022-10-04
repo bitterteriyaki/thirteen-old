@@ -15,11 +15,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import random
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Author
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from bot.utils.constants import GUILD_ID
@@ -70,6 +72,25 @@ class Currency(commands.Cog):
 
         await ctx.cache.setnx(f"currency:{member.id}:balance", 0)
 
+    async def add_coins(self, member, amount):
+        """Adds coins to a user's balance.
+        
+        Parameters
+        ----------
+        member: :class:`discord.Member`
+            The member to add coins to.
+        amount: :class:`int`
+            The amount of coins to add.
+        """
+        async with self.bot.db.connect() as conn:
+            await conn.execute(
+                update(CurrencyUser)
+                .where(CurrencyUser.id == member.id)
+                .values(balance=CurrencyUser.balance + amount)
+            )
+
+        await self.bot.cache.incrby(f"currency:{member.id}:balance", amount)
+
     @commands.hybrid_command()
     @app_commands.guilds(GUILD_ID)
     @app_commands.describe(member="The member to check the balance of.")
@@ -77,6 +98,19 @@ class Currency(commands.Cog):
         """Check your or another user's balance."""
         balance = await ctx.cache.get(f"currency:{member.id}:balance") or 0
         content = f"{member.mention} has **{balance} {COIN_EMOJI}**."
+        await ctx.reply(content)
+
+    @commands.hybrid_command()
+    @commands.before_invoke(insert_user)
+    @commands.cooldown(1, 86400, commands.BucketType.user)
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.describe(member="The member to give money to.")
+    async def daily(self, ctx, member: discord.Member = Author):
+        """Collect your daily reward or give it to another user."""
+        amount = random.randint(25, 50)
+        await self.add_coins(member, amount)
+
+        content = f"{member.mention} collected **{amount} {COIN_EMOJI}**."
         await ctx.reply(content)
 
 
