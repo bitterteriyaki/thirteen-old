@@ -1,5 +1,8 @@
 FROM python:3.10
 
+RUN apt-get update
+RUN apt-get install -y postgresql-client
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
