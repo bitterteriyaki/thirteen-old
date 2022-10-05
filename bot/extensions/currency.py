@@ -32,8 +32,8 @@ COIN_EMOJI = "\U0001fa99"
 
 
 class Currency(commands.Cog):
-    """Currency related commands. You can check your balance, give money
-    to other users, and more.
+    """Currency related commands. You can check your balance, give
+    credits to other users, and more.
     
     Attributes
     ----------
