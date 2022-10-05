@@ -6,6 +6,8 @@ services:
   cache:
     image: redis
     command: redis-server
+    volumes:
+      - redis:/data
   bot:
     build: .
     tty: true
@@ -18,3 +20,4 @@ services:
 
 volumes:
   postgresql:
+  redis:
