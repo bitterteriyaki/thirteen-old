@@ -111,10 +111,14 @@ class Currency(commands.Cog):
     ):
         """Transfira créditos para outro usuário."""
         if member == ctx.author:
-            return await ctx.reply("Você não pode transferir para si mesmo.")
+            return await ctx.reply(
+                "Você não pode transferir créditos para si mesmo."
+            )
 
         if member.bot:
-            return await ctx.reply("Você não pode transferir para um bot.")
+            return await ctx.reply(
+                "Você não pode transferir créditos para um bot."
+            )
 
         balance = await ctx.cache.get(f"currency:{ctx.author.id}:balance") or 0
 
