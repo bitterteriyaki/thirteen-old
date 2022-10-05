@@ -72,7 +72,7 @@ class Currency(commands.Cog):
 
         await ctx.cache.setnx(f"currency:{member.id}:balance", 0)
 
-    async def add_coins(self, member, amount):
+    async def add_credits(self, member, amount):
         """Adds coins to a user's balance.
         
         Parameters
@@ -88,8 +88,29 @@ class Currency(commands.Cog):
                 .where(CurrencyUser.id == member.id)
                 .values(balance=CurrencyUser.balance + amount)
             )
+            await conn.commit()
 
         await self.bot.cache.incrby(f"currency:{member.id}:balance", amount)
+
+    async def remove_credits(self, member, amount):
+        """Removes credits from a user's balance.
+            
+        Parameters
+        ----------
+        member: :class:`discord.Member`
+            The member to remove credits from.
+        amount: :class:`int`
+            The amount of credits to remove.
+        """
+        async with self.bot.db.connect() as conn:
+            await conn.execute(
+                update(CurrencyUser)
+                .where(CurrencyUser.id == member.id)
+                .values(balance=CurrencyUser.balance - amount)
+            )
+            await conn.commit()
+
+        await self.bot.cache.decrby(f"currency:{member.id}:balance", amount)
 
     @commands.hybrid_command()
     @app_commands.guilds(GUILD_ID)
@@ -108,10 +129,38 @@ class Currency(commands.Cog):
     async def daily(self, ctx, member: discord.Member = Author):
         """Colete seus créditos diários ou dê a outro usuário."""
         amount = random.randint(25, 50)
-        await self.add_coins(member, amount)
+        await self.add_credits(member, amount)
 
         content = f"{member.mention} coletou **{amount} {COIN_EMOJI}**."
         await ctx.reply(content)
+
+    @commands.hybrid_command()
+    @commands.before_invoke(insert_user)
+    @app_commands.guilds(GUILD_ID)
+    @app_commands.describe(member="O membro para transferir os créditos.")
+    async def transfer(
+        self,
+        ctx,
+        member: discord.Member,
+        amount: app_commands.Range[int, 0, None],
+    ):
+        """Transfira créditos para outro usuário."""
+        if member == ctx.author:
+            return await ctx.reply("Você não pode transferir para si mesmo.")
+
+        coins = await ctx.cache.get(f"currency:{ctx.author.id}:balance")
+        balance = int(coins) if coins else 0
+
+        if amount > balance:
+            return await ctx.reply("Você não tem saldo suficiente.")
+
+        await self.remove_credits(ctx.author, amount)
+        await self.add_credits(member, amount)
+
+        await ctx.reply(
+            f"{ctx.author.mention} transferiu **{amount} {COIN_EMOJI}** " \
+            f"para {member.mention}."
+        )
 
 
 async def setup(bot):
