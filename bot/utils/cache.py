@@ -29,4 +29,12 @@ def create_cache():
     :class:`redis.Redis`
         The Redis cache connection.
     """
-    return redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
+    def convert_to_int(value):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return value
+
+    r = redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
+    r.set_response_callback("GET", convert_to_int)
+    return r

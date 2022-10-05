@@ -48,96 +48,61 @@ class Currency(commands.Cog):
         async with self.bot.db.connect() as conn:
             users = await conn.execute(select(CurrencyUser))
 
-        for id, balance in users.all():
-            await self.bot.cache.setnx(f"currency:{id}:balance", balance)
+        for user_id, balance in users.all():
+            await self.bot.cache.setnx(f"currency:{user_id}:balance", balance)
 
-    async def insert_user(self, ctx):
-        """Inserts a user into the database and cache if they don't
-        exist. This is called when a user tries to use a command that
-        requires them to be in the database.
-        
+    async def add_credits(self, user_id, amount):
+        """Adds credits to a user. If the user doesn't exist in the
+        database, they will be inserted.
+
         Parameters
         ----------
-        ctx: :class:`bot.utils.context.ThirteenContext`
-            The context of the command.
+        user_id: :class:`int`
+            The user ID.
+        amount: :class:`int`
+            The amount of credits to add.
         """
-        member = ctx.kwargs.get("member") or ctx.author
-
-        async with ctx.db.connect() as conn:
-            insert_stmt = insert(CurrencyUser).values(id=member.id)
+        async with self.bot.db.connect() as conn:
+            insert_stmt = insert(CurrencyUser).values(id=user_id)
             stmt = insert_stmt.on_conflict_do_nothing()
 
             await conn.execute(stmt)
             await conn.commit()
 
-        await ctx.cache.setnx(f"currency:{member.id}:balance", 0)
-
-    async def add_credits(self, member, amount):
-        """Adds coins to a user's balance.
-        
-        Parameters
-        ----------
-        member: :class:`discord.Member`
-            The member to add coins to.
-        amount: :class:`int`
-            The amount of coins to add.
-        """
         async with self.bot.db.connect() as conn:
             await conn.execute(
                 update(CurrencyUser)
-                .where(CurrencyUser.id == member.id)
+                .where(CurrencyUser.id == user_id)
                 .values(balance=CurrencyUser.balance + amount)
             )
             await conn.commit()
 
-        await self.bot.cache.incrby(f"currency:{member.id}:balance", amount)
-
-    async def remove_credits(self, member, amount):
-        """Removes credits from a user's balance.
-            
-        Parameters
-        ----------
-        member: :class:`discord.Member`
-            The member to remove credits from.
-        amount: :class:`int`
-            The amount of credits to remove.
-        """
-        async with self.bot.db.connect() as conn:
-            await conn.execute(
-                update(CurrencyUser)
-                .where(CurrencyUser.id == member.id)
-                .values(balance=CurrencyUser.balance - amount)
-            )
-            await conn.commit()
-
-        await self.bot.cache.decrby(f"currency:{member.id}:balance", amount)
+        await self.bot.cache.incrby(f"currency:{user_id}:balance", amount)
 
     @commands.hybrid_command()
     @app_commands.guilds(GUILD_ID)
     @app_commands.describe(member="O membro para verificar o saldo.")
     async def balance(self, ctx, member: discord.Member = Author):
-        """Verifique o seu saldo ou o de outro usuário."""
+        """Verifique seu saldo atual (ou a de outro membro)."""
         balance = await ctx.cache.get(f"currency:{member.id}:balance") or 0
-        content = f"{member.mention} possui **{balance} {COIN_EMOJI}**."
-        await ctx.reply(content)
+        word = "Você" if member == ctx.author else member.mention
+        await ctx.reply(f"{word} tem **{balance} {COIN_EMOJI}**.")
 
     @commands.hybrid_command()
-    @commands.before_invoke(insert_user)
     @commands.cooldown(1, 86400, commands.BucketType.user)
     @app_commands.guilds(GUILD_ID)
     @app_commands.describe(member="O membro a quem dar os créditos.")
     async def daily(self, ctx, member: discord.Member = Author):
         """Colete seus créditos diários ou dê a outro usuário."""
         amount = random.randint(25, 50)
-        await self.add_credits(member, amount)
+        await self.add_credits(member.id, amount)
 
-        content = f"{member.mention} coletou **{amount} {COIN_EMOJI}**."
-        await ctx.reply(content)
+        word = "Você" if member == ctx.author else member.mention
+        await ctx.reply(f"{word} coletou **{amount} {COIN_EMOJI}**.")
 
     @commands.hybrid_command()
-    @commands.before_invoke(insert_user)
     @app_commands.guilds(GUILD_ID)
-    @app_commands.describe(member="O membro para transferir os créditos.")
+    @app_commands.describe(member="O membro a quem transferir os créditos.")
     async def transfer(
         self,
         ctx,
@@ -148,18 +113,19 @@ class Currency(commands.Cog):
         if member == ctx.author:
             return await ctx.reply("Você não pode transferir para si mesmo.")
 
-        coins = await ctx.cache.get(f"currency:{ctx.author.id}:balance")
-        balance = int(coins) if coins else 0
+        if member.bot:
+            return await ctx.reply("Você não pode transferir para um bot.")
+
+        balance = await ctx.cache.get(f"currency:{ctx.author.id}:balance") or 0
 
         if amount > balance:
-            return await ctx.reply("Você não tem saldo suficiente.")
+            return await ctx.reply("Você não tem créditos suficientes.")
 
-        await self.remove_credits(ctx.author, amount)
-        await self.add_credits(member, amount)
+        await self.add_credits(member.id, amount)
+        await self.add_credits(ctx.author.id, -amount)
 
         await ctx.reply(
-            f"{ctx.author.mention} transferiu **{amount} {COIN_EMOJI}** " \
-            f"para {member.mention}."
+            f"Você transferiu **{amount} {COIN_EMOJI}** para {member.mention}."
         )
 
 
