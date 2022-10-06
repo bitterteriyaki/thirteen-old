@@ -16,4 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 GUILD_ID = 1024172073070895124
+LOG_CHANNEL_ID = 1027574658461089883
+
 EMBED_COLOR = 0x2f3136
