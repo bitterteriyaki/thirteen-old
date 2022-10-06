@@ -89,9 +89,11 @@ class Mod(commands.Cog):
         de expulsar membros para usar este comando. Você também precisa
         especificar um motivo para a expulsão.
         """
+        author = ctx.author
+        reason = f"Ação realizada por {author} (ID: {author.id}) | {reason}"
+
         try:
-            # await member.kick()
-            pass
+            await member.kick(reason=reason)
         except discord.Forbidden:
             await ctx.reply("Eu não tenho permissão para expulsar este usuário.")
         else:
