@@ -91,10 +91,13 @@ class Mod(commands.Cog):
         especificar um motivo para a expulsão.
         """
         author = ctx.author
-        reason = f"Ação realizada por {author} (ID: {author.id}) | {reason}"
+        action_reason = (
+            f"Ação realizada por {author} (ID: {author.id}) | " \
+            f"Reason: {reason}"
+        )
 
         try:
-            await member.kick(reason=reason)
+            await member.kick(reason=action_reason)
         except discord.Forbidden:
             await ctx.reply("Eu não tenho permissão para expulsar este usuário.")
         else:
