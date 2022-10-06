@@ -83,6 +83,7 @@ class Mod(commands.Cog):
         await self.log_channel.send(embed=embed)
 
     @commands.hybrid_command()
+    @commands.has_permissions(kick_members=True)
     @app_commands.guilds(GUILD_ID)
     async def kick(self, ctx, member: discord.Member, reason: REASONS):
         """Expulsa um usuário do servidor. Você precisa ter a permissão
@@ -99,7 +100,6 @@ class Mod(commands.Cog):
         else:
             await ctx.reply(f"**{member}** foi expulso do servidor.")
             await self.log_action(ctx, member, reason)
-
 
 
 async def setup(bot):
