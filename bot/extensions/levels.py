@@ -24,7 +24,6 @@ from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from bot.utils.database import LevelUser
-from bot.utils.context import ThirteenContext
 from bot.utils.constants import EMBED_COLOR
 
 
