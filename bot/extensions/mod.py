@@ -71,6 +71,7 @@ class Mod(commands.Cog):
         """
         author = ctx.author
         title = PUNISHMENTS_MAPPING[ctx.command.name]
+
         embed = Embed(title=title, color=EMBED_COLOR)
         embed.set_author(name=str(author), icon_url=author.display_avatar.url)
         embed.set_thumbnail(url=member.display_avatar.url)
