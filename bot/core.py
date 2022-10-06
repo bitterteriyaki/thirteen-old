@@ -58,6 +58,17 @@ class Thirteen(commands.Bot):
 
             self.is_first_run = False
 
+    async def on_message(self, message):
+        # Ignore messages from webhooks and bots.
+        if not isinstance(message.author, discord.Member):
+            return
+        
+        if message.author.bot:
+            return
+
+        self.dispatch("regular_message", message)
+        await self.process_commands(message)
+
     async def get_context(self, message):
         return await super().get_context(message, cls=ThirteenContext)
 

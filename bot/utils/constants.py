@@ -16,3 +16,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 GUILD_ID = 1024172073070895124
+EMBED_COLOR = 0x2f3136

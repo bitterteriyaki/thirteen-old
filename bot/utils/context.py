@@ -18,8 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from discord import Embed
 from discord.ext.commands import Context
 
-
-EMBED_COLOR = 0x2f3136
+from bot.utils.constants import EMBED_COLOR
 
 
 class ThirteenContext(Context):
