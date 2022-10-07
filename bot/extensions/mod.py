@@ -84,6 +84,7 @@ class Mod(commands.Cog):
 
     @commands.hybrid_command()
     @commands.has_permissions(kick_members=True)
+    @app_commands.default_permissions(kick_members=True)
     @app_commands.guilds(GUILD_ID)
     async def kick(self, ctx, member: discord.Member, reason: REASONS):
         """Expulsa um usuário do servidor. Você precisa ter a permissão
