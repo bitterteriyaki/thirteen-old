@@ -21,7 +21,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands, Embed
 
-from bot.utils.constants import GUILD_ID, EMBED_COLOR, LOG_CHANNEL_ID
+from bot.utils.constants import EMBED_COLOR, LOG_CHANNEL_ID
 
 
 REASONS = Literal[
@@ -37,6 +37,7 @@ REASONS = Literal[
 
 PUNISHMENTS_MAPPING = {
     "kick": "Membro expulso",
+    "ban": "Membro banido",
 }
 
 
@@ -52,6 +53,12 @@ class Mod(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    def get_reason_message(self, ctx, reason):
+        return (
+            f"Ação executada por {ctx.author} (ID: {ctx.author.id}) | "
+            f"Motivo: {reason}"
+        )
 
     @discord.utils.cached_property
     def log_channel(self):
@@ -89,17 +96,34 @@ class Mod(commands.Cog):
     @app_commands.describe(reason="Motivo da punição")
     async def kick(self, ctx, member: discord.Member, reason: REASONS):
         """Expulsa um usuário do servidor."""
-        action_reason = (
-            f"Ação realizada por {ctx.author} (ID: {ctx.author.id}) | " \
-            f"Reason: {reason}"
-        )
+        action_reason = self.get_reason_message(ctx, reason)
 
         try:
             await member.kick(reason=action_reason)
         except discord.Forbidden:
-            await ctx.reply("Eu não tenho permissão para expulsar este usuário.")
+            await ctx.reply(
+                "Eu não tenho permissão para expulsar este usuário."
+            )
         else:
             await ctx.reply(f"**{member}** foi expulso do servidor.")
+            await self.log_action(ctx, member, reason)
+
+    @commands.hybrid_command()
+    @commands.has_permissions(ban_members=True)
+    @app_commands.default_permissions(ban_members=True)
+    @app_commands.describe(member="Usuário a ser punido")
+    @app_commands.describe(reason="Motivo da punição")
+    async def ban(self, ctx, member: discord.Member, reason: REASONS):
+        """Bane um usuário do servidor."""
+        action_reason = self.get_reason_message(ctx, reason)
+        member = ctx.guild.get_member(member.id) or "Usuário (ID: {member.id})"            
+
+        try:
+            await member.ban(reason=action_reason)
+        except discord.Forbidden:
+            await ctx.reply("Eu não tenho permissão para banir este usuário.")
+        else:
+            await ctx.reply(f"**{member}** foi banido do servidor.")
             await self.log_action(ctx, member, reason)
 
 
