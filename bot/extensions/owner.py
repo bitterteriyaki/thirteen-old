@@ -37,6 +37,7 @@ class Owner(commands.Cog):
     @commands.command()
     async def sync(self, ctx):
         """Syncs the bot's slash commands with Discord."""
+        ctx.bot.tree.copy_global_to(guild=ctx.guild)
         synced = await ctx.bot.tree.sync(guild=ctx.guild)
         await ctx.reply(f"Foram sincronizados **{len(synced)}** comandos.")
 

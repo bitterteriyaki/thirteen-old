@@ -80,7 +80,6 @@ class Currency(commands.Cog):
         await self.bot.cache.incrby(f"currency:{user_id}:balance", amount)
 
     @commands.hybrid_command()
-    @app_commands.guilds(GUILD_ID)
     @app_commands.describe(member="O membro para verificar o saldo.")
     async def balance(self, ctx, member: discord.Member = Author):
         """Verifique seu saldo atual (ou a de outro membro)."""
@@ -90,7 +89,6 @@ class Currency(commands.Cog):
 
     @commands.hybrid_command()
     @commands.cooldown(1, 86400, commands.BucketType.user)
-    @app_commands.guilds(GUILD_ID)
     @app_commands.describe(member="O membro a quem dar os créditos.")
     async def daily(self, ctx, member: discord.Member = Author):
         """Colete seus créditos diários ou dê a outro usuário."""
@@ -101,7 +99,6 @@ class Currency(commands.Cog):
         await ctx.reply(f"{word} coletou **{amount} {COIN_EMOJI}**.")
 
     @commands.hybrid_command()
-    @app_commands.guilds(GUILD_ID)
     @app_commands.describe(member="O membro a quem transferir os créditos.")
     async def transfer(
         self,
