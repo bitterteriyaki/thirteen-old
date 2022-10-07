@@ -85,14 +85,12 @@ class Mod(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(kick_members=True)
     @app_commands.default_permissions(kick_members=True)
+    @app_commands.describe(member="Usuário a ser punido")
+    @app_commands.describe(reason="Motivo da punição")
     async def kick(self, ctx, member: discord.Member, reason: REASONS):
-        """Expulsa um usuário do servidor. Você precisa ter a permissão
-        de expulsar membros para usar este comando. Você também precisa
-        especificar um motivo para a expulsão.
-        """
-        author = ctx.author
+        """Expulsa um usuário do servidor."""
         action_reason = (
-            f"Ação realizada por {author} (ID: {author.id}) | " \
+            f"Ação realizada por {ctx.author} (ID: {ctx.author.id}) | " \
             f"Reason: {reason}"
         )
 
