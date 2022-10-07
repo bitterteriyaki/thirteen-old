@@ -25,7 +25,7 @@ from bot.utils.constants import EMBED_COLOR, LOG_CHANNEL_ID
 
 
 REASONS = Literal[
-    "Violação dos Termos de Serviço do Discord",
+    "Violação dos Diretrizes do Discord",
     "Divulgação de conteúdos sem autorização prévia",
     "Spamming, flooding ou qualquer outra forma de abuso",
     "Má convivência ou comportamento inapropriado",
