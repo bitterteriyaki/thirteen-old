@@ -73,6 +73,8 @@ class Thirteen(commands.Bot):
         return await super().get_context(message, cls=ThirteenContext)
 
     async def setup_hook(self):
+        await self.load_extension("jishaku")
+
         for extension in get_extensions():
             try:
                 await self.load_extension(extension)
