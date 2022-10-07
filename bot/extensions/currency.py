@@ -24,7 +24,6 @@ from discord.ext.commands import Author
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 
-from bot.utils.constants import GUILD_ID
 from bot.utils.database import CurrencyUser
 
 
